@@ -97,18 +97,27 @@ def _menu_registrasi(db):
 
     # Cek NIM duplikat
     existing = user_service.get_user_by_nim(nim)
+    
+    name = ""
+    is_updating_face = False
+    
     if existing is not None:
-        print_error(f"NIM '{nim}' sudah terdaftar atas nama {existing.name}.")
-        press_enter_to_continue()
-        return
-
-    # Input Nama
-    name = input("  Nama : ").strip()
-    is_valid, message = validate_name(name)
-    if not is_valid:
-        print_error(message)
-        press_enter_to_continue()
-        return
+        if existing.face_encoding is not None:
+            print_error(f"NIM '{nim}' sudah terdaftar dan wajah sudah diregistrasi atas nama {existing.name}.")
+            press_enter_to_continue()
+            return
+        else:
+            print_info(f"Pengguna ditemukan (Nama: {existing.name}). Melanjutkan registrasi wajah...")
+            name = existing.name
+            is_updating_face = True
+    else:
+        # Input Nama
+        name = input("  Nama : ").strip()
+        is_valid, message = validate_name(name)
+        if not is_valid:
+            print_error(message)
+            press_enter_to_continue()
+            return
 
     # Capture wajah
     max_attempts = 3
@@ -187,9 +196,12 @@ def _menu_registrasi(db):
         encoding_bytes = serialize_encoding(encoding)
 
         # Simpan pengguna ke database
-        add_success, add_msg, user_id = user_service.add_user(
-            nim, name, encoding_bytes
-        )
+        if is_updating_face:
+            add_success, add_msg = user_service.update_face_encoding(existing.id, encoding_bytes)
+        else:
+            add_success, add_msg, user_id = user_service.add_user(
+                nim, name, encoding_bytes
+            )
 
         if add_success:
             print_success("Registrasi berhasil!")

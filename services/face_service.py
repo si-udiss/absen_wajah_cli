@@ -34,8 +34,8 @@ def detect_faces(frame):
         tuple: (face_count: int, face_locations: list, message: str)
     """
     try:
-        # Konversi BGR (OpenCV) ke RGB (face_recognition)
-        rgb_frame = frame[:, :, ::-1]
+        # Konversi BGR (OpenCV) ke RGB (face_recognition) dan pastikan contiguous
+        rgb_frame = np.ascontiguousarray(frame[:, :, ::-1])
 
         # Deteksi lokasi wajah
         face_locations = face_recognition.face_locations(rgb_frame)
@@ -67,8 +67,8 @@ def create_face_encoding(frame, face_locations=None):
         tuple: (success: bool, encoding: numpy.ndarray atau None, message: str)
     """
     try:
-        # Konversi BGR ke RGB
-        rgb_frame = frame[:, :, ::-1]
+        # Konversi BGR ke RGB dan pastikan contiguous
+        rgb_frame = np.ascontiguousarray(frame[:, :, ::-1])
 
         # Deteksi lokasi wajah jika belum ada
         if face_locations is None:
